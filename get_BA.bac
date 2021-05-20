@@ -1,0 +1,187 @@
+#include "header.h"
+
+double probList[Nnodes];
+double probNorm;
+double ranVal;
+
+extern double ran2(int *seed);
+int findPos(double x,int tempK);
+int tempI;
+int accept;
+double tempVal;
+
+
+void get_BA(int kinVal){
+    
+	
+	/*
+	 //ensure that the arrays are initialized before running this function
+	 //node degrees _are not_ set to zero before iteration
+	 */
+	
+    
+	for(i=0;i<N;i++){
+		nodes.deg[i]=0;
+		nodes.inDeg[i]=0;
+		nodes.outDeg[i]=0;
+	}
+	
+	for(i=0;i<kinVal;i++){
+		nodes.deg[i]=1;
+	}
+	//start with kinVal nodes, each of which have one virtual degree.
+	
+	/*  INITIALIZE  WITH VIRTUAL EDGES  */
+	
+	
+	
+	k=0;
+    for(i=kinVal;i<N;i++){		//insert a new node i, which has kinVal edges
+		for(l=0;l<kinVal;l++){	//loop over 0...kinVal edges
+			
+			
+			accept=0;
+			while(accept==0){				//ensure that we don't repeat edges.
+				j=findPos(ran2(&seed),N);	//pick a node to add a new edge to
+				accept=1;					//check to see if this edge (i to j) or (j to i) exists already
+				if(i==j){
+					accept=0;
+				}
+
+				else{
+					for(m=0;m<k;m++){
+						if(edges.start[m]==i & edges.end[m]==j & nodes.deg[i]%2==1){
+	//						accept=0;
+							break;											
+						}
+						if(edges.start[m]==j & edges.end[m]==i & nodes.deg[i]%2==0){
+	//						accept=0;
+							break;
+						}
+					}
+ 
+				}
+ 
+			}//end of while loop.  Ensures that we don't repeat an edge
+			if(nodes.deg[i]%2==0){			//if even degree already, have an edge leading from i to j
+				edges.end[k]=i;				
+				edges.start[k]=j;
+				nodes.inDeg[i]+=1;
+				nodes.outDeg[j]+=1;
+				nodes.deg[i]+=1;
+				nodes.deg[j]+=1;
+			}
+			else{							//otherwise orient leading j to i
+				edges.end[k]=j;				
+				edges.start[k]=i;			
+				nodes.inDeg[j]+=1;
+				nodes.outDeg[i]+=1;
+				nodes.deg[i]+=1;
+				nodes.deg[j]+=1;
+
+			}
+			k+=1;						//update edge iteration
+			
+			if(k>M){
+				printf("over edge count while building:  %d %d\n",k,M);
+			}
+			
+		}
+    }    
+    
+	for(i=0;i<kinVal;i++){
+		nodes.deg[i]-=1;
+	}
+	//subtract off the virtual degree given in the first step.
+	
+	
+	
+    for(i=0;i<kinVal;i++){		//add edges for the nodes that were excluded in the beginning
+		for(l=0;l<kinVal;l++){	//loop over 0...kinVal edges
+			
+			accept=0;
+			while(accept==0){				//ensure that we don't repeat edges.
+				j=findPos(ran2(&seed),N);	//pick a node to add a new edge to
+				accept=1;					//check to see if this edge (i to j) or (j to i) exists already
+				if(i==j){
+					accept=0;
+				}
+				else{
+					for(m=0;m<k;m++){
+						if(edges.start[m]==i & edges.end[m]==j & nodes.deg[i]%2==1){
+							accept=0;
+							break;
+						}
+						if(edges.start[m]==j & edges.end[m]==i & nodes.deg[i]%2==0){
+							accept=0;
+							break;
+						}
+					}
+				}
+			}//end of while loop.  Ensures that we don't repeat an edge
+			
+			if(nodes.deg[i]%2==0){			//if even degree already, have an edge leading from i to j
+				edges.end[k]=i;				
+				edges.start[k]=j;
+				nodes.inDeg[i]+=1;
+				nodes.outDeg[j]+=1;
+				nodes.deg[i]+=1;
+				nodes.deg[j]+=1;
+			}
+			else{							//otherwise orient leading j to i
+				edges.end[k]=j;				
+				edges.start[k]=i;			
+				nodes.inDeg[j]+=1;
+				nodes.outDeg[i]+=1;
+				nodes.deg[i]+=1;
+				nodes.deg[j]+=1;
+				
+			}
+			k+=1;						//update edge iteration
+			if(k>M){
+				printf("over edge count\n");
+			}
+			
+		}
+    }    
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+}
+
+int findPos(double x,int tempK){
+	probNorm=0;
+	tempVal=0;
+	
+	for(tempI=0;tempI<tempK;tempI++){
+		probNorm+=((double)(nodes.deg[tempI]));
+	}    
+	tempVal=((double)(nodes.deg[0]))/probNorm;
+    tempI=0;
+	
+	
+    while(0<1){
+        if(x<=tempVal){
+            return tempI;
+        }
+        else{
+			if(tempVal>1){		//if there is a problem, give up!
+				printf("BA method failed:  probabilities not normalized at %d %d\n",i,l);
+                return -1;
+            }			
+            tempI+=1;
+            tempVal+=((double)(nodes.deg[tempI]))/probNorm;
+        }
+        
+    }
+    
+}
