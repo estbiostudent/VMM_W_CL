@@ -1,7 +1,5 @@
 #include "header.h"
-#include <argp.h>
-
-
+#include <inttypes.h>
 
 #define numd 1
 #define numN 1
@@ -21,7 +19,7 @@
 
 //don't change anything above these lines
 
-#define Nrun 10					//number of networks
+//#define Nrun 10					//number of networks
 #define Ntrial 3000				//number of trajectories per network
 
 
@@ -92,23 +90,20 @@ int NumTrials,nRuns;
 
 
 
-/* A description of the arguments we accept. */
-static char args_doc[] = "ARG1 ARG2";
 
-
-/* The options we understand. */
-static struct argp_option options[] = {
-  {"verbose",  'v', 0,      0,  "Produce verbose output" },
-  {"quiet",    'q', 0,      0,  "Don't produce any output" },
-  {"output",   'o', "FILE", 0,
-   "Output to FILE instead of standard output" },
-  { 0 }
-};
 
 int main(int argc, char **argv){
 
+	if(argc<2){
+		printf("expecting number of runs\n");
+		exit(0);
+		printf("shouldn't be here");
+	}
+	char* endptr;
+	int nruns = strtoimax(argv[1],&endptr,10);
 
-	nRuns=Nrun;
+
+	nRuns=nruns;
 	NumTrials=Ntrial;
 
 	runStart=1;
