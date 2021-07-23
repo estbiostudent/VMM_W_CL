@@ -92,31 +92,20 @@ int NumTrials,nRuns;
 
 
 
+/* A description of the arguments we accept. */
+static char args_doc[] = "ARG1 ARG2";
 
 
+/* The options we understand. */
+static struct argp_option options[] = {
+  {"verbose",  'v', 0,      0,  "Produce verbose output" },
+  {"quiet",    'q', 0,      0,  "Don't produce any output" },
+  {"output",   'o', "FILE", 0,
+   "Output to FILE instead of standard output" },
+  { 0 }
+};
 
-
-
-int main(){
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+int main(int argc, char **argv){
 
 
 	nRuns=Nrun;
