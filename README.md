@@ -8,3 +8,4 @@ Parameters for it to run exactly like VMM_Canonical should be:
   4. g1: repair rate
   6. d: damage rate - fraction of nodes that start out damaged
   7. N: number of nodes in the network
+  8. seed: seed value with which to start random number generation
