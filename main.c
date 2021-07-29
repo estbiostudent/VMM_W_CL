@@ -1,5 +1,43 @@
 #include "header.h"
 #include <inttypes.h>
+#include <getopt.h>
+#include <string.h>
+
+
+const char helptext[] = "\n vmm --[verbose|(brief)] --help, -a/--add [...] -b/--append [...]\n"
+						"\t --help print this help message\n"
+						"\t --nodes number of nodes for the network\n"
+						"\t --nruns number of geometries to try\n"
+						"\t --Ntrials number of trajectories to run per geometry\n"
+						"\t --gamma0 random failure rate of nodes\n"
+						"\t --gamma1 random recovery rate of nodes\n"
+						"\t --delta percentage of nodes that start off failed\n"
+						"\t --seed1 first part of random seed with which to start\n"
+						"\t --seed2 second part of random seed with which to start\n"
+						"\t --dir  directory to save everything in (will be made if doesn't exist)\n"	
+						"\t Defaults are: --nodes 700 --nruns 10 --ntrials 3000 --gamma0 0.015 --gamma1 0.14 --delta 2.4 --seed1 661 --seed2 661 --dir output\n";
+						
+						
+static struct option long_options[] =
+        {
+          /* These options set a flag. */
+          //{"verbose", no_argument,       &verbose_flag, 1},
+          //{"brief",   no_argument,       &verbose_flag, 0},
+          /* These options don’t set a flag.
+             We distinguish them by their indices. */
+          {"help",    no_argument,       0, 'h'},
+          {"nodes",   required_argument,       0, 'n'},
+          {"nruns",   required_argument,       0, 'r'},
+          {"ntrials",  required_argument,       0, 't'},
+          {"gamma0",  required_argument, 0, 'g'},
+          {"gamma1",  required_argument, 0, 'G'},
+          {"delta",  required_argument, 0, 'D'},
+          {"seed1",  required_argument, 0, 's'},
+          {"seed2",  required_argument, 0, 'S'},
+          {"dir",    required_argument, 0, 'd'},
+          {0, 0, 0, 0}
+        };
+
 
 #define numd 1
 #define numN 1
@@ -19,15 +57,15 @@
 
 //don't change anything above these lines
 
-//#define Nrun 10					//number of networks
+#define Nrun 10					//number of networks
 #define Ntrial 3000				//number of trajectories per network
 
 
 
-int Nl[numN]={700};	//N value goes here
-double g1l[numg1]={0.015};		//gamma0 value goes here
-double g2l[numg2]={0.14};		//gamma1 value goes here
-double dl[numd]={2.4};			//damage value goes here
+//int Nl[numN]={700};	//N value goes here
+//double g1l[numg1]={0.015};		//gamma0 value goes here
+//double g2l[numg2]={0.14};		//gamma1 value goes here
+//double dl[numd]={2.4};			//damage value goes here
 
 //800,0.0035,0.0035,4
 //2700,0.0017,0,10
@@ -94,71 +132,126 @@ int NumTrials,nRuns;
 
 int main(int argc, char **argv){
 
-	if(argc<2){
-		printf("expecting number of runs\n");
-		exit(0);
-		printf("shouldn't be here");
-	}
-	char* endptr;
-	int nruns = strtoimax(argv[1],&endptr,10);
+	
 
-
-	nRuns=nruns;
+/* process command line options*/
+// set defaults first, so that if we don't have any options we're good
+	
+	// Nl[numN] (which is number of nodes) is set above
+	nRuns=Nrun;
 	NumTrials=Ntrial;
+	int Nl=700;	//N value goes here
+	double g1l=0.015;		//gamma0 value goes here
+	double g2l=0.14;		//gamma1 value goes here
+	double dl=2.4;			//damage value goes here
+
+	int S1=661;
+	int S2=661;
+	char directory[1024] = "output";
+	printf("delta before loop: %.2f\n",dl);
+	while (1)
+    {
+      
+      /* getopt_long stores the option index here. */
+      int option_index = 0;
+      int c;
+      char* endptr;
+      char mydamage[1024];
+      c = getopt_long (argc, argv, "hn:r:t:g:G:D:s:S:d:",
+                       long_options, &option_index);
+      printf("processing c=%c, delta value is: %.2f\n",c,dl);
+      /* Detect the end of the options. */
+      if (c == -1)
+        break;
+
+      switch (c)
+        {
+        case 0:
+          /* If this option set a flag, do nothing else now. */
+          if (long_options[option_index].flag != 0)
+            break;
+          printf ("option %s", long_options[option_index].name);
+          if (optarg)
+            printf (" with arg %s", optarg);
+          printf ("\n");
+          break;
+
+        case 'h':
+          printf(helptext);
+          exit(0);
+          break;
+
+        case 'n':
+          Nl = strtoimax(optarg,&endptr,10);
+          printf ("option --nodes with value `%i'\n", Nl);
+          break;
+        case 'r':
+        	nRuns = strtoimax(optarg,&endptr,10);
+          printf ("option --nruns with value `%i'\n", nRuns);
+          break;
+        case 't':
+        	NumTrials = strtoimax(optarg,&endptr,10);
+          printf ("option --ntrials with value `%i'\n", NumTrials);
+          break;
+        case 'g':
+        	g1l= atof(optarg);
+          printf ("option --gamma0 with value `%f'\n", g1l);
+          break;
+        case 'D':  	 
+        	//strcpy(mydamage,optarg);
+        	dl = atof(optarg);
+          printf ("option --delta with value `%f'\n", dl);
+          break;
+        case 'G':
+        	g2l= atof(optarg);
+          printf ("option --gamma1 with value `%f'\n", g2l);
+          break;
+        
+        case 's':
+        	S1= strtoimax(optarg,&endptr,10);
+          printf ("option --seed1 with value `%i'\n", S1);
+          break;
+        case 'S':
+        	S2= strtoimax(optarg,&endptr,10);
+          printf ("option --seed2 with value `%i'\n", S2);
+          break;
+
+        case 'd':
+        	
+        	strcpy(directory,optarg);
+
+          printf ("option --dir with value `%s'\n", directory);
+          break;     
+        
+        case '?':
+          /* getopt_long already printed an error message. */
+        	exit(0);
+          break;
+
+        default:
+          abort ();
+        } //end case
+    
+    } //end while
+
+	
 
 	runStart=1;
-	int Niter,g1iter,g2iter,diter;
-	system("mkdir output");
-
-
-	/*
-	f1=fopen("params.txt","w");
-	fprintf(f1,"N={");
-	for(i=0;i<numN;i++){
-		fprintf(f1,"%d",Nl[i]);
-		if(i<numN-1){
-			fprintf(f1,",");
-		}
-	}
-	fprintf(f1,"}\n");
-	fprintf(f1,"g1={");
-	for(i=0;i<numg1;i++){
-		fprintf(f1,"%f",g1l[i]);
-		if(i<numg1-1){
-			fprintf(f1,",");
-		}
-	}
-	fprintf(f1,"}\n");
-	fprintf(f1,"g2={");
-	for(i=0;i<numg2;i++){
-		fprintf(f1,"%f",g2l[i]);
-		if(i<numg2-1){
-			fprintf(f1,",");
-		}
-	}
-	fprintf(f1,"}\n");
-	fprintf(f1,"d={");
-	for(i=0;i<numd;i++){
-		fprintf(f1,"%f",dl[i]);
-		if(i<numd-1){
-			fprintf(f1,",");
-		}
-	}
-	fprintf(f1,"}\n");
-	fclose(f1);
-	*/
-
-
+	int Niter;
+	char mycmd[1024];
+	strcpy(mycmd, "mkdir ");
+	strcat(mycmd, directory);
+	system(mycmd);
 
 
 	printf("\nrunning.....\n");
 	printf("# of networks = %d\n",nRuns);
 	printf("# of trajectories per network = %d\n",NumTrials);
 
-	for(Niter=0;Niter<numN;Niter++){
-		for(run=runStart;run<=nRuns+runStart-1;run++){
-			N=Nl[Niter];
-			seed=-2-659*run-661*N;
+		for(run=runStart;run<=nRuns+runStart-1;run++)
+		{
+			N=Nl;
+			seed=-S1*run-S2*N;
 			kBarabasi=2;
 			M=(N-1)*kBarabasi;
 
@@ -172,38 +265,28 @@ int main(int argc, char **argv){
 //			}
 //			fclose(f2);
 
-			for(g1iter=0;g1iter<numg1;g1iter++){
-				for(g2iter=0;g2iter<numg2;g2iter++){
-					for(diter=0;diter<numd;diter++){
 
 
-						damage=dl[diter];
-						KillProb=g1l[g1iter];
-						ResProb=g2l[g2iter];
+			damage=dl;
+			printf("damage is %.2f\n", dl);
+			KillProb=g1l;
+			ResProb=g2l;
 
 //						printf("%d %.1f %.1f %.1f %d\n",N,1000*KillProb,1000*ResProb,damage,run);
 
-						if(run==1){
-							printf("\nN = %d\n",N);
-							printf("g0 = %.2f x 10^(-3)\n",1000*KillProb);
-							printf("g1 = %.2f g0\n",ResProb/KillProb);
-							printf("d = %.2f\n\n",damage);
-						}
+			if(run==1){
+				printf("\nN = %d\n",N);
+				printf("g0 = %.2f x 10^(-3)\n",1000*KillProb);
+				printf("g1 = %.2f g0\n",ResProb/KillProb);
+				printf("d = %.2f\n\n",damage);
+			}
 
 
 
-						sprintf(fn2,"output/Lifetimes_run%d.txt",run);
-						f2=fopen(fn2,"w");
-						run_trajectories();
-						fclose(f2);
-
-
-
-					}//end of loop over damage
-				}//end of loop over gamma1
-			}//end of loop over gamma0
-
-
+			sprintf(fn2,"%s/Lifetimes_run%d.txt",directory,run);
+			f2=fopen(fn2,"w");
+			run_trajectories();
+			fclose(f2);
 
 
 
@@ -250,7 +333,6 @@ int main(int argc, char **argv){
 
 
 		}//end of loop over runs
-	}//end of loop over N
     return 0;
 }
 
